@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Car Racing Game</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+    let scene, camera, renderer;
+    let car, carSpeed = 0.2, carRotation = 0;
+    let clock = new THREE.Clock();
+
+    // Initialize the 3D scene, camera, and renderer
+    function init() {
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Add basic ambient lighting
+        let light = new THREE.AmbientLight(0xffffff, 1.5);
+        scene.add(light);
+
+        // Create a road (long flat rectangle)
+        let roadGeometry = new THREE.BoxGeometry(10, 0.1, 100);
+        let roadMaterial = new THREE.MeshBasicMaterial({ color: 0x777777 });
+        let road = new THREE.Mesh(roadGeometry, roadMaterial);
+        road.position.set(0, -0.05, 0);
+        scene.add(road);
+
+        // Create a car (simple box for simplicity)
+        let carGeometry = new THREE.BoxGeometry(1, 0.5, 2);
+        let carMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        car = new THREE.Mesh(carGeometry, carMaterial);
+        car.position.set(0, 0.25, -50);  // Position car at the start
+        scene.add(car);
+
+        // Set up camera position
+        camera.position.set(0, 2, 5);
+        camera.lookAt(0, 1, 0);
+
+        // Event listener for keyboard controls
+        window.addEventListener('keydown', onKeyDown, false);
+        window.addEventListener('keyup', onKeyUp, false);
+
+        // Start the animation loop
+        animate();
+    }
+
+    // Keyboard input handling
+    let keys = { left: false, right: false, up: false, down: false };
+
+    function onKeyDown(event) {
+        if (event.key === 'ArrowLeft' || event.key === 'a') {
+            keys.left = true;
+        } else if (event.key === 'ArrowRight' || event.key === 'd') {
+            keys.right = true;
+        } else if (event.key === 'ArrowUp' || event.key === 'w') {
+            keys.up = true;
+        } else if (event.key === 'ArrowDown' || event.key === 's') {
+            keys.down = true;
+        }
+    }
+
+    function onKeyUp(event) {
+        if (event.key === 'ArrowLeft' || event.key === 'a') {
+            keys.left = false;
+        } else if (event.key === 'ArrowRight' || event.key === 'd') {
+            keys.right = false;
+        } else if (event.key === 'ArrowUp' || event.key === 'w') {
+            keys.up = false;
+        } else if (event.key === 'ArrowDown' || event.key === 's') {
+            keys.down = false;
+        }
+    }
+
+    // Animate the scene
+    function animate() {
+        requestAnimationFrame(animate);
+
+        // Handle car movement based on keyboard input
+        if (keys.up) {
+            car.position.z += carSpeed; // Move forward
+        }
+        if (keys.down) {
+            car.position.z -= carSpeed; // Move backward
+        }
+        if (keys.left) {
+            carRotation -= 0.05; // Rotate left
+        }
+        if (keys.right) {
+            carRotation += 0.05; // Rotate right
+        }
+
+        // Update car rotation
+        car.rotation.y = carRotation;
+
+        // Keep the car within bounds (can expand for more complex track)
+        if (car.position.x > 5) car.position.x = 5;
+        if (car.position.x < -5) car.position.x = -5;
+
+        // Update camera position to follow the car
+        camera.position.z = car.position.z + 5;
+        camera.position.x = car.position.x;
+        camera.lookAt(car.position);
+
+        // Render the scene
+        renderer.render(scene, camera);
+    }
+
+    // Initialize the game
+    init();
+</script>
+</body>
+</html>
